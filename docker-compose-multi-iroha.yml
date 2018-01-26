@@ -1,0 +1,134 @@
+version: '3.1'
+
+services:
+  # node01 ============>
+  node01:
+    image: cimadai/iroha:v1
+    restart: always
+    environment:
+      NODE_NAME: node01
+    depends_on:
+      - node01_redis
+      - node01_pg
+    volumes:
+      - ./test_multi_data/node01/block-store:/tmp/block_store
+      - ./test_multi_data/node01/iroha-status:/tmp/iroha-status
+      - ./test_multi_data/node01/config:/opt/iroha/config
+      - ./test_multi_config:/tmp/iroha-config
+    tty: true
+    cap_add:
+      - SYS_PTRACE
+    command: "./bin/startup.sh"
+
+  node01_redis:
+    image: redis:3.2.8
+    restart: always
+
+  node01_pg:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+  # <============ node01
+
+  # node02 ============>
+  node02:
+    image: cimadai/iroha:v1
+    restart: always
+    environment:
+      NODE_NAME: node02
+    depends_on:
+      - node02_redis
+      - node02_pg
+    volumes:
+      - ./test_multi_data/node02/block-store:/tmp/block_store/
+      - ./test_multi_data/node02/iroha-status:/tmp/iroha-status
+      - ./test_multi_data/node02/config:/opt/iroha/config
+      - ./test_multi_config:/tmp/iroha-config
+    tty: true
+    cap_add:
+      - SYS_PTRACE
+    command: "./bin/startup.sh"
+
+  node02_redis:
+    image: redis:3.2.8
+    restart: always
+
+  node02_pg:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+  # <============ node02
+
+  # node03 ============>
+  node03:
+    image: cimadai/iroha:v1
+    restart: always
+    environment:
+      NODE_NAME: node03
+    depends_on:
+      - node03_redis
+      - node03_pg
+    volumes:
+      - ./test_multi_data/node03/block-store:/tmp/block_store/
+      - ./test_multi_data/node03/iroha-status:/tmp/iroha-status
+      - ./test_multi_data/node03/config:/opt/iroha/config
+      - ./test_multi_config:/tmp/iroha-config
+    tty: true
+    cap_add:
+      - SYS_PTRACE
+    command: "./bin/startup.sh"
+
+  node03_redis:
+    image: redis:3.2.8
+    restart: always
+
+  node03_pg:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+  # <============ node03
+
+  # node04 ============>
+  node04:
+    image: cimadai/iroha:v1
+    restart: always
+    environment:
+      NODE_NAME: node04
+    depends_on:
+      - node04_redis
+      - node04_pg
+    volumes:
+      - ./test_multi_data/node04/block-store:/tmp/block_store/
+      - ./test_multi_data/node04/iroha-status:/tmp/iroha-status
+      - ./test_multi_data/node04/config:/opt/iroha/config
+      - ./test_multi_config:/tmp/iroha-config
+    tty: true
+    cap_add:
+      - SYS_PTRACE
+    command: "./bin/startup.sh"
+
+  node04_redis:
+    image: redis:3.2.8
+    restart: always
+
+  node04_pg:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+  # <============ node04
+
+  nginx:
+    image: tekn0ir/nginx-stream
+    volumes:
+     - ./test_multi_config/grpc.conf:/opt/nginx/stream.conf.d/grpc.conf
+    ports:
+      - "50051:50051"
+    command: /bin/bash -c "sleep 30 && /opt/nginx/sbin/nginx -g 'daemon off;'"
