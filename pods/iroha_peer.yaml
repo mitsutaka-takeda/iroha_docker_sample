@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: iroha-peer1
+spec:
+  containers:
+  - image: mitsutakatakeda/iroha:latest
+    name: iroha
+    env:
+      - name: NODE_NAME
+        value: node01
+    ports:
+    - containerPort: 50051
+      protocol: TCP
+    - containerPort: 10001
+      protocol: TCP
+    command: ["/opt/iroha/bin/irohad"]
+    args: ["--config", "/opt/iroha/config/config.conf", "--keypair_name", "/opt/iroha/config/node01", "--genesis_block", "/opt/iroha/config/genesis.block"]
+    volumeMounts:
+      - name: config-volume
+        mountPath: /opt/iroha/config
+  - image: redis:3.2.8
+    name: redis
+    ports:
+      - containerPort: 6379
+        protocol: TCP
+  - image: postgres:9.5
+    name: postgres
+    ports:
+      - containerPort: 5432
+        protocol: TCP
+    env:
+    - name: POSTGRES_USER
+      value: postgres
+    - name: POSTGRES_PASSWORD
+      value: password
+  volumes:
+    - name: config-volume
+      configMap:
+        name: iroha-single-node-config
+        items:
+        - key: admin_at_test.domain.priv
+          path: admin@test.domain.priv
+        - key: admin_at_test.domain.pub
+          path: admin@test.domain.pub
+        - key: genesis.block
+          path: genesis.block
+        - key: node01.priv
+          path: node01.priv
+        - key: node01.pub
+          path: node01.pub
+        - key: config.conf
+          path: config.conf
