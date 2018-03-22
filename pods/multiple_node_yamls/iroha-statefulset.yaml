@@ -1,0 +1,74 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: iroha
+spec:
+  serviceName: iroha
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: iroha
+    spec:
+      containers:
+      - image: mitsutakatakeda/iroha:latest
+        name: iroha
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+        ports:
+        - containerPort: 50051
+          protocol: TCP
+        - containerPort: 10001
+          protocol: TCP
+        command: ["/opt/iroha/bin/irohad"]
+        args: ["--config", "/opt/iroha/config/config.conf", "--keypair_name", "/opt/iroha/config/$(NODE_NAME)", "--genesis_block", "/opt/iroha/config/genesis.block"]
+        volumeMounts:
+          - name: config-volume
+            mountPath: /opt/iroha/config
+      - image: redis:3.2.8
+        name: redis
+        ports:
+          - containerPort: 6379
+            protocol: TCP
+      - image: postgres:9.5
+        name: postgres
+        ports:
+          - containerPort: 5432
+            protocol: TCP
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: password
+      volumes:
+        - name: config-volume
+          configMap:
+            name: iroha-multiple-node-config
+            items:
+            - key: admin_at_test.domain.priv
+              path: admin@test.domain.priv
+            - key: admin_at_test.domain.pub
+              path: admin@test.domain.pub
+            - key: genesis.block
+              path: genesis.block
+            - key: config.conf
+              path: config.conf
+            - key: node00.priv
+              path: iroha-0.priv
+            - key: node00.pub
+              path: iroha-0.pub
+            - key: node01.priv
+              path: iroha-1.priv
+            - key: node01.pub
+              path: iroha-1.pub
+            - key: node02.priv
+              path: iroha-2.priv
+            - key: node02.pub
+              path: iroha-2.pub
+            - key: node03.priv
+              path: iroha-3.priv
+            - key: node03.pub
+              path: iroha-3.pub
